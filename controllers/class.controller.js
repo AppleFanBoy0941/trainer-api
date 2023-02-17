@@ -1,22 +1,24 @@
-var { Class, Trainer, Asset, User, Rating } = require("../models/models");
+var { Class, Trainer, Asset, User, Rating } = require('../models/models')
 
 async function getSingleClass(req, res, next) {
 	try {
-		let classData = await Class.findByPk(parseInt(req.params.id), { include: [ Trainer, Asset, User ] });
-		res.json(classData);
+		let classData = await Class.findByPk(parseInt(req.params.id), {
+			include: [Trainer, Asset, User],
+		})
+		res.json(classData)
 	} catch (error) {
-		console.log(error);
-		res.status(500).end();
+		console.log(error)
+		res.status(500).end()
 	}
 }
 
 async function getAllClasses(req, res, next) {
 	try {
-		let classData = await Class.findAll({ include: [ Trainer, Asset ] });
-		res.json(classData);
+		let classData = await Class.findAll({ include: [Trainer, Asset] })
+		res.json(classData)
 	} catch (error) {
-		console.error(error);
-		res.status(500).end();
+		console.error(error)
+		res.status(500).end()
 	}
 }
 
@@ -29,38 +31,60 @@ async function createSingleClass(req, res, next) {
 			classTime: req.fields.classTime,
 			maxParticipants: req.fields.maxParticipants,
 			trainerId: req.fields.trainerId,
-			assetId: req.fields.assetId
-		});
-		res.json(classData);
+			assetId: req.fields.assetId,
+		})
+		res.json(classData)
 	} catch (error) {
-		console.error(error);
-		res.status(500).end();
+		console.error(error)
+		res.status(500).end()
 	}
 }
 
 async function getRatings(req, res, next) {
 	try {
-		let rating = await Rating.findAll({ where: { classId: req.params.id } });
-		res.json(rating);
+		let rating = await Rating.findAll({ where: { classId: req.params.id } })
+		res.json(rating)
 	} catch (error) {
-		console.error(error);
-		res.status(500).end();
+		console.error(error)
+		res.status(500).end()
 	}
 }
 
 async function saveRating(req, res, next) {
 	try {
-		let rating = await Rating.findAll({ where: { userId: req.fields.userId, classId: req.params.id } });
-		if (rating.length) return res.status(405).end();
+		let rating = await Rating.findAll({
+			where: { userId: req.fields.userId, classId: req.params.id },
+		})
+		if (rating.length) return res.status(405).end()
 
 		let newRating = await Rating.create({
 			userId: req.fields.userId,
 			classId: req.params.id,
-			rating: req.fields.rating
-		});
-		res.json(newRating);
+			rating: req.fields.rating,
+		})
+		res.json(newRating)
+	} catch (error) {}
+}
+
+async function updateRatings(req, res, next) {
+	try {
+		let rating = await Rating.findAll({
+			where: { userId: req.params.id, classId: req.params.classId },
+		})
+		if (!rating.length) return res.status(405).end()
+
+		let updatedRating = await Rating.update(
+			{
+				rating: req.fields.rating,
+			},
+			{
+				where: { userId: req.params.id, classId: req.params.classId },
+			}
+		)
+		res.json(updatedRating)
 	} catch (error) {
-		
+		console.error(error)
+		res.status(500).end()
 	}
 }
 
@@ -69,5 +93,6 @@ module.exports = {
 	getSingleClass,
 	getAllClasses,
 	getRatings,
-	saveRating
-};
+	saveRating,
+	updateRatings,
+}
